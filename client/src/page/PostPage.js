@@ -1,10 +1,12 @@
 import React from "react";
-import Header from "../component/Header/Header";
-import PostContainer from "../component/PostPage/PostContainer";
+import Header from "../components/common/Header";
+import PostContainer from "../components/PostPage/PostContainer";
 
 export default function App() {
-    return (<>
-        <Header />
-        <PostContainer/>
-    </>)
+  return (
+    <>
+      <Header />
+      <PostContainer />
+    </>
+  );
 }

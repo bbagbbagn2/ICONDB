@@ -1,14 +1,14 @@
 import React from "react";
-import Header from "../component/Header/Header";
-import Top from "../component/LandingPage/Top";
-import LandingContainer from "../component/LandingPage/LandingContainer";
-import TopButton from "../component/TopButton";
+import Header from "../components/common/Header";
+import LandingContainer from "../components/LandingPage/LandingContainer";
+import TopButton from "../components/TopButton";
 
 export default function Main() {
-    return (<>
-        <Header />
-        <Top text="GET FREE ICONS" />
-        <LandingContainer />
-        <TopButton />
-    </>);
+  return (
+    <>
+      <Header />
+      <LandingContainer />
+      <TopButton />
+    </>
+  );
 }
