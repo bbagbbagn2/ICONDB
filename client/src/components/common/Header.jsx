@@ -75,7 +75,7 @@ export default function Header() {
           )}
           <li>
             {sign === null ? (
-              <Link to="/sign_up">
+              <Link to="/login">
                 <Button>로그인</Button>
               </Link>
             ) : (
