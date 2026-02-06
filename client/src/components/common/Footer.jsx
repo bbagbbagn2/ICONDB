@@ -16,7 +16,7 @@ export default function Footer() {
               <Link to="#">아이콘 검색</Link>
             </li>
             <li>
-              <Link to="posting">아이콘 업로드</Link>
+              <Link to="upload">아이콘 업로드</Link>
             </li>
             <li>
               <Link to="#">컬렉션</Link>

@@ -10,11 +10,10 @@ export default function FormBox() {
     password: "",
   });
   const { id, password } = formData;
-  const handlerChange = (e) => {
-    e.preventDefault();
 
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -46,7 +45,7 @@ export default function FormBox() {
           name="id"
           placeholder="아이디를 입력해주세요"
           value={id}
-          onChange={handlerChange}
+          onChange={handleChange}
           required
         />
       </InputGroup>
@@ -59,7 +58,7 @@ export default function FormBox() {
           name="password"
           placeholder="••••••••"
           value={password}
-          onChange={handlerChange}
+          onChange={handleChange}
           required
         />
       </InputGroup>

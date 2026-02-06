@@ -28,6 +28,33 @@ export default function App() {
   const [profileFollower, setProfileFollower] = useState([]);
 
   useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const [auth, content, liked, following, follower, profile] =
+          await Promise.all([
+            axios.post("/get_auth"),
+            axios.post("/get_usercontent", { id: user }),
+            axios.post("/get_userlike", { id: user }),
+            axios.post("/get_Following", { id: user }),
+            axios.post("/get_Follower", { id: user }),
+            axios.post("/get_profile", { user }),
+          ]);
+
+        setSign(auth.data);
+        setProfileContent(content.data);
+        setProfileLiked(liked.data);
+        setProfileFollow(following.data);
+        setProfileFollower(follower.data);
+        setProfileData(profile.data[0]);
+      } catch (error) {
+        console.error("Failed to fetch profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [user]);
+
+  useEffect(() => {
     axios.post("/get_auth").then((res) => {
       setSign(res.data);
       if (res.data) {

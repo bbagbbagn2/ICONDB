@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
@@ -7,33 +7,39 @@ import ImageContainer from "../ImageContainer";
 import LogoIcon from "./LogoIcon";
 
 export default function Header() {
-  const [sign, setSign] = useState(null);
-  const [profileData, setProfileData] = useState({
-    profileName: "Anonymous.png",
-    nickName: "Anonymous",
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState({
+    name: "Anonymous.png",
+    nick: "Anonymous",
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    axios.post("/get_auth").then((res) => {
-      let data = res.data;
-      setSign(data);
-      axios
-        .post("/get_profile", {
-          user: data,
-        })
-        .then((res) => {
-          setProfileData(res.data[0]);
+  const fetchUser = useCallback(async () => {
+    try {
+      const authRes = await axios.post("/get_auth");
+
+      if (authRes.data) {
+        setUser(authRes.data);
+        const profileRes = await axios.post("/get_profile", {
+          user: authRes.data,
         });
-    });
+        setProfile(profileRes.data[0]);
+      }
+    } catch (error) {
+      console.error("Failed to load user data", error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   //Logout
   const signOut = async () => {
     try {
       const res = await axios.post("/sign_out");
       if (res.data === "success") {
-        setSign(null);
+        setUser(null);
         navigate("/");
       }
     } catch (error) {
@@ -47,24 +53,24 @@ export default function Header() {
   };
 
   return (
-    <HeaderContainer sign={sign}>
+    <HeaderContainer sign={user}>
       <Nav>
         <LogoIcon />
         <NavMenu>
           <li>
-            <NavLink to="/posting">업로드</NavLink>
+            <NavLink to="/upload">업로드</NavLink>
           </li>
           <li>
             <NavLink onClick={openEditor} to="#">
               수정하기
             </NavLink>
           </li>
-          {sign !== null && (
-            <Link to={"/profile/" + sign}>
+          {user !== null && (
+            <Link to={"/profile/" + user}>
               <ImageContainer
                 src={
                   "https://webservicegraduationproject.s3.amazonaws.com/userprofile/" +
-                  profileData.profileName
+                  profile.name
                 }
                 alt="프로필 이미지"
                 width="45px"
@@ -74,7 +80,7 @@ export default function Header() {
             </Link>
           )}
           <li>
-            {sign === null ? (
+            {user === null ? (
               <Link to="/login">
                 <Button>로그인</Button>
               </Link>
