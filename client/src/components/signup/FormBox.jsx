@@ -3,19 +3,49 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
 
+import { useNotification } from "../common/NotificationContext";
+import { useApi } from "../../hooks";
+
 export default function SignupFormBox() {
   const navigate = useNavigate();
-  const [formData, setFormDate] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     id: "",
     password: "",
     confirmPassword: "",
   });
   const [passwordStrength, setPasswordStrength] = useState("");
+  const [errors, setErrors] = useState({});
+  const { toastSuccess } = useNotification();
+  const { request } = useApi();
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name) newErrors.name = "이름을 입력해주세요.";
+    if (!formData.id) newErrors.id = "아이디를 입력해주세요.";
+    if (!formData.password) {
+      newErrors.password = "비밀번호를 입력해주세요.";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "비밀번호를 8자 이상 입력해주세요.";
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password = "비밀번호에 소문자 영어를 포함해야 합니다.";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "비밀번호에 숫자를 포함해야 합니다.";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
+    } else if (formData.confirmPassword !== formData.password) {
+      newErrors.confirmPassword = "비밀번호와 일치하게 입력해주세요.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormDate((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -26,32 +56,46 @@ export default function SignupFormBox() {
   };
 
   const checkPasswordStrength = (password) => {
-    if (password.length < 6) setPasswordStrength("weak");
-    else if (password.length < 10) setPasswordStrength("medium");
-    else setPasswordStrength("strong");
+    // 정규표현식으로 각 조건 확인
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumbers = /[0-9]/.test(password);
+    const hasSymbols = /[!@#$%^&*()_+=\-{};:'",.<>/?\\|`~[\]]/.test(password);
+
+    // 소문자 영어와 숫자는 필수
+    if (!hasLowerCase || !hasNumbers) {
+      setPasswordStrength("");
+      return;
+    }
+
+    // 조건에 따라 강도 설정
+    if (hasLowerCase && hasNumbers && hasUpperCase && hasSymbols) {
+      setPasswordStrength("strong");
+    } else if (hasLowerCase && hasNumbers && hasUpperCase) {
+      setPasswordStrength("medium");
+    } else if (hasLowerCase && hasNumbers) {
+      setPasswordStrength("weak");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("비밀번호가 맞지 않습니다.");
+    if (!validateForm()) {
       return;
     }
 
-    try {
-      const res = await axios.post("/sign_up", {
-        name: formData.name,
-        id: formData.id,
-        pw: formData.password,
-      });
+    const data = await request(
+      () => axios.post("/sign_up", { formData }),
+      "SIGNUP",
+    );
 
-      if (res.data === 2000) {
-        alert("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.");
-        navigate("/login");
-      }
-    } catch (error) {
-      alert("가입 중 오류가 발생했습니다.");
+    if (data) {
+      toastSuccess(
+        "회원가입 성공",
+        `${formData.name || "사용자"}님 환영합니다!`,
+      );
+      navigate("/login");
     }
   };
 
@@ -66,8 +110,9 @@ export default function SignupFormBox() {
           placeholder="홍길동"
           value={formData.name}
           onChange={handleChange}
-          required
+          $hasError={!!errors.name}
         />
+        {errors.name && <ErrorText>{errors.name}</ErrorText>}
       </InputGroup>
       <InputGroup>
         <Label htmlFor="id">아이디</Label>
@@ -78,8 +123,9 @@ export default function SignupFormBox() {
           placeholder="아이디를 입력해주세요"
           value={formData.id}
           onChange={handleChange}
-          required
+          $hasError={!!errors.id}
         />
+        {errors.id && <ErrorText>{errors.id}</ErrorText>}
       </InputGroup>
 
       <InputGroup>
@@ -91,8 +137,9 @@ export default function SignupFormBox() {
           placeholder="8자 이상 입력하세요"
           value={formData.password}
           onChange={handleChange}
-          required
+          $hasError={!!errors.password}
         />
+        {errors.password && <ErrorText>{errors.password}</ErrorText>}
         <PasswordStrength $strength={passwordStrength}>
           <div />
         </PasswordStrength>
@@ -114,8 +161,11 @@ export default function SignupFormBox() {
           placeholder="비밀번호를 다시 입력하세요"
           value={formData.confirmPassword}
           onChange={handleChange}
-          required
+          $hasError={!!errors.confirmPassword}
         />
+        {errors.confirmPassword && (
+          <ErrorText>{errors.confirmPassword}</ErrorText>
+        )}
       </InputGroup>
       <SignupButton type="submit">회원가입</SignupButton>
     </Form>
@@ -140,7 +190,8 @@ const Label = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.9rem 1.2rem;
-  border: 2px solid #e5e8eb;
+  padding-right: 3rem;
+  border: 2px solid ${(props) => (props.$hasError ? "#FF6B6B" : "#E5E8EB")};
   border-radius: 15px;
   font-size: 1rem;
   font-family: "Outfit", sans-serif;
@@ -149,7 +200,7 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #9ed1d9;
+    border-color: ${(props) => (props.$hasError ? "#FF6B6B" : "#9ed1d9")};
     background: white;
   }
 
@@ -193,6 +244,14 @@ const StrengthText = styled.span`
   }};
   margin-top: 0.3rem;
   display: block;
+`;
+
+const ErrorText = styled.span`
+  display: block;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
 `;
 
 const SignupButton = styled.button`

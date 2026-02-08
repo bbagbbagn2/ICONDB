@@ -4,6 +4,7 @@ import styled from "styled-components";
 import axios from "axios";
 
 import { useNotification } from "../common/NotificationContext";
+import { useApi } from "../../hooks";
 
 export default function FormBox() {
   const navigate = useNavigate();
@@ -12,15 +13,14 @@ export default function FormBox() {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const { toastSuccess, toastError, toastWarning } = useNotification();
+  const { toastSuccess } = useNotification();
+  const { request } = useApi();
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.id) newErrors.id = "아이디를 입력해주세요.";
     if (!formData.password) {
       newErrors.password = "비밀번호를 입력해주세요.";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "비밀번호는 8자 이상이어야 합니다.";
     }
 
     setErrors(newErrors);
@@ -36,46 +36,18 @@ export default function FormBox() {
     e.preventDefault();
 
     if (!validateForm()) {
-      toastWarning("입력 확인", "입력한 정보를 확인해주세요.");
+      // 입력 오류는 warning으로 표시 - 유지보수시 true로 변경하면 됨
       return;
     }
 
-    try {
-      const { data, status } = await axios.post("/sign_in", { formData });
+    const data = await request(
+      () => axios.post("/sign_in", { formData }),
+      "LOGIN", // 액션 기반 에러 처리 - errorConfig에서 LOGIN별 메시지 사용
+    );
 
-      if (status === 200) {
-        toastSuccess("로그인 성공!", `${data.name || "사용자"}님 환영합니다!`);
-        navigate("/");
-      }
-    } catch (error) {
-      handleLoginError(error);
-    }
-  };
-
-  const handleLoginError = (error) => {
-    const status = error.response?.status; // HTTP 상태 코드
-
-    switch (true) {
-      case status === 401:
-        toastError("로그인 실패", "이메일 또는 비밀번호가 올바르지 않습니다.");
-        break;
-
-      case !error.response:
-        toastError("네트워크 오류", "인터넷 연결을 확인해주세요.");
-        break;
-
-      case status === 500:
-        toastError(
-          "서버 오류",
-          "현재 서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-        );
-        break;
-
-      default:
-        toastError(
-          "로그인 실패",
-          error.message || "알 수 없는 오류가 발생했습니다.",
-        );
+    if (data) {
+      toastSuccess("로그인 성공!", `${data.name || "사용자"}님 환영합니다!`);
+      navigate("/");
     }
   };
 
@@ -90,8 +62,9 @@ export default function FormBox() {
           placeholder="아이디를 입력해주세요"
           value={formData.id}
           onChange={handleChange}
-          required
+          $hasError={!!errors.id}
         />
+        {errors.id && <ErrorText>{errors.id}</ErrorText>}
       </InputGroup>
 
       <InputGroup>
@@ -104,7 +77,6 @@ export default function FormBox() {
           value={formData.password}
           onChange={handleChange}
           $hasError={!!errors.password}
-          required
         />
         {errors.password && <ErrorText>{errors.password}</ErrorText>}
       </InputGroup>
