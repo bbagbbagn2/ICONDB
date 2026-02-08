@@ -6,9 +6,11 @@ export default function CTASection() {
     <Section>
       <h2>지금 바로 시작하세요!</h2>
       <p>회원가입하고 다양한 무료 아이콘을 사용해보세요</p>
-      <Button style={{ fontSize: "1.1rem", padding: "1rem 2.5rem" }}>
-        <Link to="/signup">가입하기</Link>
-      </Button>
+      <Link to="/signup">
+        <Button style={{ fontSize: "1.1rem", padding: "1rem 2.5rem" }}>
+          가입하기
+        </Button>
+      </Link>
     </Section>
   );
 }

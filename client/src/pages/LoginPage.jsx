@@ -1,19 +1,22 @@
 import styled from "styled-components";
 
+import { NotificationProvider } from "../components/common/NotificationContext";
 import LogoBox from "../components/login/LogoBox";
 import FormBox from "../components/login/FormBox";
 import SignupPrompt from "../components/login/SignupPrompt";
 
 export default function Login() {
   return (
-    <PageContainer>
-      <LoginBox>
-        <LogoBox />
-        <FormBox />
-        <Divider>또는</Divider>
-        <SignupPrompt />
-      </LoginBox>
-    </PageContainer>
+    <NotificationProvider>
+      <PageContainer>
+        <LoginBox>
+          <LogoBox />
+          <FormBox />
+          <Divider>또는</Divider>
+          <SignupPrompt />
+        </LoginBox>
+      </PageContainer>
+    </NotificationProvider>
   );
 }
 

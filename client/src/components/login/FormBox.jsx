@@ -3,13 +3,29 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
 
+import { useNotification } from "../common/NotificationContext";
+
 export default function FormBox() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     id: "",
     password: "",
   });
-  const { id, password } = formData;
+  const [errors, setErrors] = useState({});
+  const { toastSuccess, toastError, toastWarning } = useNotification();
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.id) newErrors.id = "아이디를 입력해주세요.";
+    if (!formData.password) {
+      newErrors.password = "비밀번호를 입력해주세요.";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "비밀번호는 8자 이상이어야 합니다.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,19 +35,47 @@ export default function FormBox() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post("/sign_in", {
-        id: id,
-        password: password,
-      });
+    if (!validateForm()) {
+      toastWarning("입력 확인", "입력한 정보를 확인해주세요.");
+      return;
+    }
 
-      if (res.data === 200) {
+    try {
+      const { data, status } = await axios.post("/sign_in", { formData });
+
+      if (status === 200) {
+        toastSuccess("로그인 성공!", `${data.name || "사용자"}님 환영합니다!`);
         navigate("/");
-      } else {
-        alert("아이디와 비밀번호를 확인해 주십시오.");
       }
     } catch (error) {
-      alert("서버와의 통신에 실패했습니다.");
+      handleLoginError(error);
+    }
+  };
+
+  const handleLoginError = (error) => {
+    const status = error.response?.status; // HTTP 상태 코드
+
+    switch (true) {
+      case status === 401:
+        toastError("로그인 실패", "이메일 또는 비밀번호가 올바르지 않습니다.");
+        break;
+
+      case !error.response:
+        toastError("네트워크 오류", "인터넷 연결을 확인해주세요.");
+        break;
+
+      case status === 500:
+        toastError(
+          "서버 오류",
+          "현재 서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        );
+        break;
+
+      default:
+        toastError(
+          "로그인 실패",
+          error.message || "알 수 없는 오류가 발생했습니다.",
+        );
     }
   };
 
@@ -44,7 +88,7 @@ export default function FormBox() {
           id="id"
           name="id"
           placeholder="아이디를 입력해주세요"
-          value={id}
+          value={formData.id}
           onChange={handleChange}
           required
         />
@@ -57,10 +101,12 @@ export default function FormBox() {
           id="password"
           name="password"
           placeholder="••••••••"
-          value={password}
+          value={formData.password}
           onChange={handleChange}
+          $hasError={!!errors.password}
           required
         />
+        {errors.password && <ErrorText>{errors.password}</ErrorText>}
       </InputGroup>
 
       <LoginButton type="submit">로그인</LoginButton>
@@ -86,7 +132,7 @@ const Label = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.9rem 1.2rem;
-  border: 2px solid #e5e8eb;
+  border: 2px solid ${(props) => (props.$hasError ? "#FF6B6B" : "#E5E8EB")};
   border-radius: 15px;
   font-size: 1rem;
   font-family: "Outfit", sans-serif;
@@ -95,13 +141,21 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #9ed1d9;
+    border-color: ${(props) => (props.$hasError ? "#FF6B6B" : "#9ED1D9")};
     background: white;
   }
 
   &::placeholder {
     color: #a0aec0;
   }
+`;
+
+const ErrorText = styled.span`
+  display: block;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
 `;
 
 const LoginButton = styled.button`
