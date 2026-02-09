@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
@@ -47,6 +47,9 @@ export default function FormBox() {
 
     if (data) {
       toastSuccess("로그인 성공!", `${data.name || "사용자"}님 환영합니다!`);
+      // 로그인 성공 후 폼 초기화
+      setFormData({ id: "", password: "" });
+      setErrors({});
       navigate("/");
     }
   };

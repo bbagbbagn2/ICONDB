@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { ReactComponent as SvgLogo } from "../../img/logo.svg";
+import logo from "../../img/logo.svg";
 
 export default function LogoIcon() {
   return (
     <Logo to="/">
-      <SvgLogo src={SvgLogo} alt="logo" height="35" width="88" />
+      <img src={logo} alt="logo" height="35" width="88" />
     </Logo>
   );
 }
