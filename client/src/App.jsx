@@ -23,7 +23,7 @@ function App() {
           <Route path="/post/:url_id" element={<PostPage />} />
           <Route path="/searching/:keyword" element={<SearchingPage />} />
           <Route path="/upload" element={<UploadPage />} />
-          <Route path="/profile/:user" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/editprofile" element={<EditProfilePage />} />
         </Routes>
       </BrowserRouter>
