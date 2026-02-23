@@ -1,26 +1,26 @@
-const sql_pool = require('./mysql.js')
-const session = require('express-session')
-const MySQLStore = require('express-mysql-session')(session)
+const session = require("express-session");
+const dotenv = require("dotenv");
+dotenv.config();
 
-// session 옵션
-const sessionStore_options = {
-    clearExpired : true,                // 만료된 세션 자동 확인 및 지우기 여부
-    checkExpirationInterval : 900000,   // 만료된 세션이 지워지는 빈도 milliseconds
-    expiration: 86400000,               // 유효한 세션의 최대 기간 milliseconds
-    createDatabaseTable : true,         // 세션 데이터베이스 테이블 생성 여부, 존재하지 않는 경우
-}
-
-const sessionStore = new MySQLStore(sessionStore_options, sql_pool)
-//sessionStore.close()  //서버 실행시 close() 할 일이 없음
+/**
+ * Express Session 설정
+ * Supabase 기반 배포를 위해 메모리 세션 사용
+ * 프로덕션 환경에서는 Redis 권장 (별도 설정 필요)
+ */
 
 const session_options = {
-    key: 'session_cookie_name',         // key
-    secret: 'my_secret',                // secret
-    store: sessionStore,                // sessionStore
-    resave: false,
-    saveUninitialized: false
-}
+  key: process.env.SESSION_KEY || "session_cookie_name",
+  secret: process.env.SESSION_SECRET || "my_secret_key",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === "production", // HTTPS에서만 쿠키 전송
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24시간
+    sameSite: "lax",
+  },
+};
 
-const session_stream = session(session_options)
+const session_stream = session(session_options);
 
-module.exports = session_stream
+module.exports = session_stream;

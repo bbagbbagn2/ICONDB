@@ -3,15 +3,20 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useNotification } from "../components/common/NotificationContext";
 import { useApi } from "./useApi";
+import { useAuthStore } from "../stores/authStore";
 
 /**
  * 로그인 폼 로직을 담당하는 커스텀 훅
  * UI와 로직을 분리하여 테스트 용이하고 재사용 가능하게 함
+ * Zustand 기반 전역 상태와 통합
  */
 export const useLoginForm = () => {
   const navigate = useNavigate();
   const { toastSuccess } = useNotification();
   const { request } = useApi();
+  const setAuthenticatedUser = useAuthStore(
+    (state) => state.setAuthenticatedUser,
+  );
 
   const [formData, setFormData] = useState({
     id: "",
@@ -59,6 +64,7 @@ export const useLoginForm = () => {
   /**
    * 로그인 제출 처리
    * 중복 제출 방지, 로딩 상태 관리, 에러 처리
+   * Zustand 상태 업데이트 포함
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +88,8 @@ export const useLoginForm = () => {
       );
 
       if (data) {
+        // Zustand 상태 업데이트
+        await setAuthenticatedUser(data);
         toastSuccess("로그인 성공!", `${data.name || "사용자"}님 환영합니다!`);
         setFormData({ id: "", password: "" });
         setErrors({});

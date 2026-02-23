@@ -41,7 +41,7 @@ export const useApi = () => {
 
     try {
       const response = await apiCall();
-      return response.data;
+      return response.data ?? response;
     } catch (err) {
       setError(err);
 

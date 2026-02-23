@@ -1,103 +1,219 @@
-import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
+import { CircularProgress } from "@material-ui/core";
+
 import Header from "../components/common/Header";
 import SearchBox from "../components/SearchBox";
 import TopButton from "../components/TopButton";
-import axios from "axios";
+import Footer from "../components/common/Footer";
+import { useSearchStore } from "../stores/searchStore";
 
-export default function App() {
-  let { keyword } = useParams();
-  const [data, setData] = useState([]);
+/**
+ * SearchingTagPage Component
+ * 태그 기반 아이콘 검색 페이지
+ * Zustand 기반 전역 상태 관리 사용
+ */
+export default function SearchingTagPage() {
+  const { tag } = useParams();
+  const searchByTag = useSearchStore((state) => state.searchByTag);
+  const data = useSearchStore((state) => state.tagResults);
+  const isLoading = useSearchStore((state) => state.isLoading);
 
+  // 태그 검색 수행
   useEffect(() => {
-    axios({
-      method: "post",
-      url: "/tag_search",
-      data: {
-        Hashtag: keyword,
-      },
-    }).then((res) => {
-      setData(res.data);
-    });
-  }, [keyword]);
+    if (!tag || tag.trim().length === 0) {
+      return;
+    }
+
+    searchByTag(tag);
+  }, [tag, searchByTag]);
 
   return (
     <>
+      <Helmet>
+        <title>#{tag} 태그 검색 - ICONDB</title>
+        <meta
+          name="description"
+          content={`"#${tag}" 태그 검색 결과 (${data.length}개)`}
+        />
+        <meta property="og:title" content={`#${tag} 태그 검색 - ICONDB`} />
+      </Helmet>
       <Header />
-      <SearchingPage>
-        <SearchBox width="60vw" fontSize="40px" />
-        <h1>Your Results : {keyword}</h1>
-        <ImageListWrapper>
-          {data.length === 0 ? (
-            <h1>no results</h1>
+      <PageContainer>
+        <SearchSection>
+          <SearchBox width="100%" fontSize="32px" maxWidth="600px" />
+          <ResultTitle>
+            태그 검색 결과: <HighlightTag>#{tag}</HighlightTag>
+          </ResultTitle>
+        </SearchSection>
+
+        <ContentSection>
+          {loading ? (
+            <LoadingContainer>
+              <CircularProgress size={60} />
+            </LoadingContainer>
+          ) : data.length === 0 ? (
+            <EmptyContainer>
+              <EmptyTitle>검색 결과가 없습니다</EmptyTitle>
+              <EmptyText>다른 태그로 검색해보세요.</EmptyText>
+            </EmptyContainer>
           ) : (
-            data.map((list, idx) => (
-              <div key={idx}>
-                <Link to={"/post/" + list.content_id}>
-                  <IconContainer>
-                    <IconList
-                      src={
-                        "https://webservicegraduationproject.s3.amazonaws.com/img/" +
-                        list.filename
-                      }
-                      alt="no_img"
-                      width="260"
+            <ImageGrid>
+              {data.map((item, idx) => (
+                <IconLink key={idx} to={`/post/${item.content_id}`}>
+                  <IconWrapper>
+                    <IconImage
+                      src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
+                      alt={item.filename}
                     />
-                    <ShowTitle>
-                      <Text>Show Detail</Text>
-                    </ShowTitle>
-                  </IconContainer>
-                </Link>
-              </div>
-            ))
+                    <Overlay>
+                      <OverlayText>상세 보기</OverlayText>
+                    </Overlay>
+                  </IconWrapper>
+                </IconLink>
+              ))}
+            </ImageGrid>
           )}
-        </ImageListWrapper>
+        </ContentSection>
+
         <TopButton />
-      </SearchingPage>
+        <Footer />
+      </PageContainer>
     </>
   );
 }
 
-const SearchingPage = styled.div`
-  position: absolute;
-  top: 55px;
-  left: 20%;
+// Styled Components
+const PageContainer = styled.div`
+  min-height: 100vh;
+  padding: 80px 2rem 2rem;
+  background: #fafbfc;
+`;
 
+const SearchSection = styled.div`
+  max-width: 1200px;
+  margin: 0 auto 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+`;
+
+const ResultTitle = styled.h1`
+  font-size: 2rem;
+  color: #2c3e50;
+  text-align: center;
+  margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const HighlightTag = styled.span`
+  color: #f5a282;
+  font-weight: 700;
+`;
+
+const ContentSection = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const ImageGrid = styled.div`
   display: grid;
-  place-content: center;
-  padding-top: 50px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
 `;
 
-const ImageListWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  grid-template-rows: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 5px;
+const IconLink = styled(Link)`
+  text-decoration: none;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+  }
 `;
 
-const IconContainer = styled.div`
-  height: 260px;
-
-  display: inline-block;
-
-  background-color: #ffffff;
-  border: 3px solid #9ed1d9;
-  border-radius: 10px;
-`;
-
-const IconList = styled.img`
-  height: 260px;
-
-  border-radius: 10px;
-`;
-
-const ShowTitle = styled.div`
+const IconWrapper = styled.div`
   position: relative;
-  top: -264px;
-  bottom: 0;
-  left: 0;
-  width: 260px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  aspect-ratio: 1;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    img {
+      transform: scale(1.05);
+    }
+
+    ${Overlay} {
+      opacity: 1;
+    }
+  }
+`;
+
+const IconImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+`;
+
+const OverlayText = styled.span`
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+`;
+
+const EmptyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+`;
+
+const EmptyTitle = styled.h2`
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+`;
+
+const EmptyText = styled.p`
+  font-size: 1.1rem;
+  color: #95a5a6;
+  font-style: italic;
   height: 260px;
 
   background-color: #9ed1d9;
