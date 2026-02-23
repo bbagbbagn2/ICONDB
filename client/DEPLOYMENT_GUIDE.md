@@ -25,12 +25,20 @@ https://your-icondb-server.onrender.com
 ```bash
 cd client
 
+# 서버 URL 확인 (Render 대시보드에서 복사)
+# 예: https://icondb-server-abc123.onrender.com
+
 # .env.production 파일 생성
 cat > .env.production << EOF
 VITE_API_URL=https://your-icondb-server.onrender.com
-VITE_CLIENT_URL=https://your-frontend-url.vercel.app
+VITE_CLIENT_URL=https://your-project.vercel.app
 EOF
 ```
+
+**📝 주의:**
+
+- `VITE_API_URL`: Render 배포 후 생성되는 서버 URL
+- `VITE_CLIENT_URL`: Vercel 배포 후 생성되는 클라이언트 URL (임시값 가능)
 
 ### 1-3. 빌드 테스트
 
@@ -102,6 +110,28 @@ VITE_CLIENT_URL=https://your-project.vercel.app
 🎉 https://your-project.vercel.app
 ```
 
+### 1-6. 배포 후 환경변수 수정 (중요!)
+
+배포 후 실제 클라이언트 URL이 생성됩니다.
+
+**Vercel 대시보드에서:**
+
+1. 배포한 프로젝트 선택
+2. **Settings** → **Environment Variables**
+3. `VITE_CLIENT_URL` 수정:
+   ```
+   이전: https://your-project.vercel.app
+   변경: https://actual-project-name.vercel.app
+   (실제 Vercel이 생성한 URL로 변경)
+   ```
+4. **Save**
+
+**재배포 필요:**
+
+1. **Deployments** 탭
+2. 마지막 배포 → **... 메뉴** → **Redeploy**
+3. 또는 GitHub에 적은 수정사항 푸시 (`git push`)
+
 ---
 
 ## 🚀 선택지 2: Netlify 배포 (대안)
@@ -143,6 +173,15 @@ VITE_CLIENT_URL=https://your-project.netlify.app
 
 ## 🔄 배포 후 설정
 
+### 환경변수 값 정리
+
+배포 후 다음 값들을 확인하고 기록하세요:
+
+| 변수              | 값                               | 어디서                        |
+| ----------------- | -------------------------------- | ----------------------------- |
+| `VITE_API_URL`    | https://your-server.onrender.com | Render 대시보드               |
+| `VITE_CLIENT_URL` | https://your-project.vercel.app  | Vercel 대시보드 → Deployments |
+
 ### API URL 확인
 
 배포된 클라이언트에서:
@@ -153,13 +192,13 @@ VITE_CLIENT_URL=https://your-project.netlify.app
 
 ### CORS 설정 확인
 
-서버의 `.env.production`에서:
+**서버** `.env.production`에서:
 
 ```env
 CLIENT_URL=https://your-project.vercel.app
 ```
 
-올바르게 설정되어 있는지 확인하세요.
+이 값이 실제 Vercel URL과 일치하는지 확인하세요.
 
 ---
 
