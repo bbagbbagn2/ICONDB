@@ -100,7 +100,7 @@ export default function FormBox() {
         axios.post("/insert_content", uploadData, {
           headers: { "Content-Type": "multipart/form-data" },
         }),
-      "UPLOAD"
+      "UPLOAD",
     );
 
     if (result === 200 || result?.status === 200) {
@@ -182,9 +182,6 @@ export default function FormBox() {
           </SubmitButton>
         </ActionButtons>
       </Form>
-    </UploadCardBox>
-  );
-}
     </UploadCardBox>
   );
 }
