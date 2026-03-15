@@ -10,9 +10,10 @@ import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import DownloadIcon from "@mui/icons-material/Download";
 import EditIcon from "@mui/icons-material/Edit";
-import axios from "axios";
+import { apiClient } from "../../config/apiClient";
 import { useApi } from "../../hooks/useApi";
 import { useNotification } from "../common/NotificationContext";
+import OptimizedImage from "../OptimizedImage";
 
 /**
  * PostContainer - 포스트 상세 페이지 컴포넌트
@@ -47,7 +48,11 @@ export default function PostContainer() {
   // 초기 로드
   useEffect(() => {
     const loadInitialData = async () => {
-      const user = await request(() => axios.post("/get_auth"), "AUTH", false);
+      const user = await request(
+        () => apiClient.post("/get_auth"),
+        "AUTH",
+        false,
+      );
       setCurrentUser(user);
     };
     loadInitialData();
@@ -77,7 +82,7 @@ export default function PostContainer() {
 
   const loadPostData = async () => {
     const postData = await request(
-      () => axios.post("/get_content", { content_id: url_id }),
+      () => apiClient.post("/get_content", { content_id: url_id }),
       "LOAD_POST",
       false,
     );
@@ -88,7 +93,7 @@ export default function PostContainer() {
     }
 
     const tagsData = await request(
-      () => axios.post("/get_tags", { content_id: url_id }),
+      () => apiClient.post("/get_tags", { content_id: url_id }),
       "LOAD_TAGS",
       false,
     );
@@ -97,7 +102,7 @@ export default function PostContainer() {
 
   const checkLikeStatus = async () => {
     const result = await request(
-      () => axios.post("/check_liked", { content_id: url_id }),
+      () => apiClient.post("/check_liked", { content_id: url_id }),
       "CHECK_LIKE",
       false,
     );
@@ -113,7 +118,7 @@ export default function PostContainer() {
     }
 
     const result = await request(
-      () => axios.post("/setLike", { content_id: url_id }),
+      () => apiClient.post("/setLike", { content_id: url_id }),
       "LIKE",
     );
     if (result !== null) {
@@ -137,7 +142,7 @@ export default function PostContainer() {
 
     const result = await request(
       () =>
-        axios.post("/tag_insert", {
+        apiClient.post("/tag_insert", {
           content_id: url_id,
           tag_context: tagInput,
         }),
@@ -158,7 +163,7 @@ export default function PostContainer() {
 
     const result = await request(
       () =>
-        axios.post("/content_update", {
+        apiClient.post("/content_update", {
           content_id: url_id,
           content_message: editMessage,
           image: null,
@@ -178,7 +183,7 @@ export default function PostContainer() {
     }
 
     const result = await request(
-      () => axios.post("/content_delete", { content_id: url_id }),
+      () => apiClient.post("/content_delete", { content_id: url_id }),
       "DELETE_POST",
     );
     if (result !== null) {
@@ -207,9 +212,12 @@ export default function PostContainer() {
     <PostContainerStyled columns={isMobile ? "1fr" : "1fr 300px"}>
       <ImageDetailSection>
         {data.filename && (
-          <PostImage
+          <OptimizedImage
             src={`https://webservicegraduationproject.s3.amazonaws.com/img/${data.filename}`}
             alt={data.filename}
+            width={500}
+            height={500}
+            blur={true}
           />
         )}
       </ImageDetailSection>

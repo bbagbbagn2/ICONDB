@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { apiClient } from "../../config/apiClient";
 import styled from "styled-components";
 
 import ImageContainer from "../ImageContainer";

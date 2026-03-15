@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import { apiClient } from "../config/apiClient";
 
 /**
  * Zustand 기반 전역 인증 상태 관리 스토어
@@ -25,11 +25,12 @@ export const useAuthStore = create((set) => ({
   initializeAuth: async () => {
     set({ isLoading: true });
     try {
-      const response = await axios.post(
+      const response = await apiClient.post(
         "/get_auth",
         {},
         {
           timeout: 5000,
+          withCredentials: true,
         },
       );
 
@@ -41,9 +42,15 @@ export const useAuthStore = create((set) => ({
 
         // 프로필 정보 조회
         try {
-          const profileRes = await axios.post("/get_profile", {
-            user: response.data,
-          });
+          const profileRes = await apiClient.post(
+            "/get_profile",
+            {
+              user: response.data,
+            },
+            {
+              withCredentials: true,
+            },
+          );
           if (profileRes.data && profileRes.data[0]) {
             set({ profile: profileRes.data[0] });
           }
@@ -83,7 +90,13 @@ export const useAuthStore = create((set) => ({
   // 액션: 로그아웃
   logout: async () => {
     try {
-      await axios.post("/sign_out");
+      await apiClient.post(
+        "/sign_out",
+        {},
+        {
+          withCredentials: true,
+        },
+      );
     } catch (error) {
       console.error("로그아웃 실패:", error);
     } finally {

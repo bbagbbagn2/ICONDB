@@ -15,7 +15,7 @@ console.log(`🔗 API URL: ${API_URL}`);
  * Axios 인스턴스 생성
  * 기본 설정 및 인터셉터 포함
  */
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
@@ -57,5 +57,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-export default apiClient;

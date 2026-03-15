@@ -1,18 +1,41 @@
 import React from "react";
 import styled from "styled-components";
+import OptimizedImage from "./OptimizedImage";
 
-export default function App({ width, height, src, alt, borderRadius, border }) {
-    return ( <ImageContainer  src={src} alt={alt} width={width} height={height} borderRadius={borderRadius} border = {border}/> );
+export default function ImageContainer({
+  width = 250,
+  height = 250,
+  src,
+  alt,
+  borderRadius,
+  border,
+  fallbackSrc = null,
+  blur = true,
+}) {
+  return (
+    <Container
+      style={{
+        width: width && typeof width === "number" ? `${width}px` : width,
+        height: height && typeof height === "number" ? `${height}px` : height,
+        border: border || "none",
+        borderRadius: borderRadius || "0",
+      }}
+    >
+      <OptimizedImage
+        src={src}
+        alt={alt}
+        width={typeof width === "number" ? width : 250}
+        height={typeof height === "number" ? height : 250}
+        fallbackSrc={fallbackSrc}
+        blur={blur}
+      />
+    </Container>
+  );
 }
 
-const ImageContainer = styled.img`
-    display: grid;
-    place-items: center;
-    place-content: center;
-    
-    width: ${(props) => (props.width || "auto")};
-    height: ${(props) => (props.height || "auto")};
-    border: ${(props) => (props.border || "none")};
-    border-radius: ${(props) => (props.borderRadius || "0")};
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 `;
-

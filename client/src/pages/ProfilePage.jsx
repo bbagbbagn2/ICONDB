@@ -1,19 +1,18 @@
 import { Helmet } from "react-helmet";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ThemeProvider, Button, CircularProgress } from "@material-ui/core";
 import ImageUploader from "react-images-uploading";
 import styled from "styled-components";
-import axios from "axios";
+import { apiClient } from "../config/apiClient";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 
-import { theme } from "../components/theme";
 import Header from "../components/common/Header";
 import ImageContainer from "../components/ImageContainer";
 import StyledInput from "../components/StyledInput";
 import StyledButton from "../components/StyledButton";
 import Loading from "../components/Loading";
+import OptimizedImage from "../components/OptimizedImage";
 import { useApi } from "../hooks/useApi";
 import { useNotification } from "../components/common/NotificationContext";
 import { useAuthStore } from "../stores/authStore";
@@ -218,31 +217,23 @@ export default function ProfilePage() {
                 />
                 <ProfileTitle>{profileData.nickname}</ProfileTitle>
                 <ProfileInfo>ID: {profileData.id}</ProfileInfo>
-                <ThemeProvider theme={theme}>
-                  {followed ? (
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      fullWidth
-                      onClick={handleFollowToggle}
-                      disabled={apiLoading}
-                      startIcon={<CheckIcon />}
-                    >
-                      팔로잉
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      fullWidth
-                      onClick={handleFollowToggle}
-                      disabled={apiLoading}
-                      startIcon={<AddIcon />}
-                    >
-                      팔로우
-                    </Button>
-                  )}
-                </ThemeProvider>
+                {followed ? (
+                  <StyledButton
+                    onClick={handleFollowToggle}
+                    disabled={apiLoading}
+                  >
+                    <CheckIcon style={{ marginRight: "8px" }} />
+                    팔로잉
+                  </StyledButton>
+                ) : (
+                  <StyledButton
+                    onClick={handleFollowToggle}
+                    disabled={apiLoading}
+                  >
+                    <AddIcon style={{ marginRight: "8px" }} />
+                    팔로우
+                  </StyledButton>
+                )}
               </>
             )}
           </ProfileBox>
@@ -250,41 +241,55 @@ export default function ProfilePage() {
           <ContentSection>
             {apiLoading ? (
               <LoadingContainer>
-                <CircularProgress />
+                <Loading />
               </LoadingContainer>
             ) : (
               <>
                 <ContentBox>
                   <SectionTitle>
-                    내 아이콘 ({profileContent.length})
+                    내 아이콘 (
+                    {Array.isArray(profileContent) ? profileContent.length : 0})
                   </SectionTitle>
                   <IconGrid>
-                    {profileContent.map((item, idx) => (
-                      <IconLink key={idx} to={`/post/${item.content_id}`}>
-                        <IconImage
-                          src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
-                          alt={`아이콘 ${idx}`}
-                        />
-                      </IconLink>
-                    ))}
-                    {profileContent.length === 0 && (
+                    {Array.isArray(profileContent) &&
+                      profileContent.map((item, idx) => (
+                        <IconLink key={idx} to={`/post/${item.content_id}`}>
+                          <OptimizedImage
+                            src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
+                            alt={`아이콘 ${idx}`}
+                            width={200}
+                            height={200}
+                            blur={true}
+                          />
+                        </IconLink>
+                      ))}
+                    {(!Array.isArray(profileContent) ||
+                      profileContent.length === 0) && (
                       <EmptyMessage>아이콘이 없습니다.</EmptyMessage>
                     )}
                   </IconGrid>
                 </ContentBox>
 
                 <ContentBox>
-                  <SectionTitle>좋아요 ({profileLiked.length})</SectionTitle>
+                  <SectionTitle>
+                    좋아요 (
+                    {Array.isArray(profileLiked) ? profileLiked.length : 0})
+                  </SectionTitle>
                   <IconGrid>
-                    {profileLiked.map((item, idx) => (
-                      <IconLink key={idx} to={`/post/${item.content_id}`}>
-                        <IconImage
-                          src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
-                          alt={`좋아요 ${idx}`}
-                        />
-                      </IconLink>
-                    ))}
-                    {profileLiked.length === 0 && (
+                    {Array.isArray(profileLiked) &&
+                      profileLiked.map((item, idx) => (
+                        <IconLink key={idx} to={`/post/${item.content_id}`}>
+                          <OptimizedImage
+                            src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
+                            alt={`좋아요 ${idx}`}
+                            width={200}
+                            height={200}
+                            blur={true}
+                          />
+                        </IconLink>
+                      ))}
+                    {(!Array.isArray(profileLiked) ||
+                      profileLiked.length === 0) && (
                       <EmptyMessage>좋아요 한 아이콘이 없습니다.</EmptyMessage>
                     )}
                   </IconGrid>
@@ -292,19 +297,25 @@ export default function ProfilePage() {
 
                 <ContentBox>
                   <SectionTitle>
-                    팔로잉 ({profileFollowing.length})
+                    팔로잉 (
+                    {Array.isArray(profileFollowing)
+                      ? profileFollowing.length
+                      : 0}
+                    )
                   </SectionTitle>
                   <UserGrid>
-                    {profileFollowing.map((user, idx) => (
-                      <UserLink key={idx} to={`/profile/${user.id}`}>
-                        <UserImage
-                          src={`https://webservicegraduationproject.s3.amazonaws.com/userprofile/${user.profilename}`}
-                          alt={user.nickname}
-                        />
-                        <UserName>{user.nickname}</UserName>
-                      </UserLink>
-                    ))}
-                    {profileFollowing.length === 0 && (
+                    {Array.isArray(profileFollowing) &&
+                      profileFollowing.map((user, idx) => (
+                        <UserLink key={idx} to={`/profile/${user.id}`}>
+                          <UserImage
+                            src={`https://webservicegraduationproject.s3.amazonaws.com/userprofile/${user.profilename}`}
+                            alt={user.nickname}
+                          />
+                          <UserName>{user.nickname}</UserName>
+                        </UserLink>
+                      ))}
+                    {(!Array.isArray(profileFollowing) ||
+                      profileFollowing.length === 0) && (
                       <EmptyMessage>
                         팔로잉 중인 사용자가 없습니다.
                       </EmptyMessage>
@@ -314,19 +325,25 @@ export default function ProfilePage() {
 
                 <ContentBox>
                   <SectionTitle>
-                    팔로워 ({profileFollowers.length})
+                    팔로워 (
+                    {Array.isArray(profileFollowers)
+                      ? profileFollowers.length
+                      : 0}
+                    )
                   </SectionTitle>
                   <UserGrid>
-                    {profileFollowers.map((user, idx) => (
-                      <UserLink key={idx} to={`/profile/${user.id}`}>
-                        <UserImage
-                          src={`https://webservicegraduationproject.s3.amazonaws.com/userprofile/${user.profilename}`}
-                          alt={user.nickname}
-                        />
-                        <UserName>{user.nickname}</UserName>
-                      </UserLink>
-                    ))}
-                    {profileFollowers.length === 0 && (
+                    {Array.isArray(profileFollowers) &&
+                      profileFollowers.map((user, idx) => (
+                        <UserLink key={idx} to={`/profile/${user.id}`}>
+                          <UserImage
+                            src={`https://webservicegraduationproject.s3.amazonaws.com/userprofile/${user.profilename}`}
+                            alt={user.nickname}
+                          />
+                          <UserName>{user.nickname}</UserName>
+                        </UserLink>
+                      ))}
+                    {(!Array.isArray(profileFollowers) ||
+                      profileFollowers.length === 0) && (
                       <EmptyMessage>팔로워가 없습니다.</EmptyMessage>
                     )}
                   </UserGrid>
@@ -436,14 +453,7 @@ const IconLink = styled(Link)`
   }
 `;
 
-const IconImage = styled.img`
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 8px;
-  background: #f0f0f0;
-  border: 1px solid #e8e8e8;
-`;
+// OptimizedImage가 대체함 - 스타일은 컴포넌트 내부에서 처리됨
 
 const UserGrid = styled.div`
   display: grid;

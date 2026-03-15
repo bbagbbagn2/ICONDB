@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import styled from "styled-components";
-import axios from "axios";
+import { apiClient } from "../../config/apiClient";
+import OptimizedImage from "../OptimizedImage";
 
 import { useNotification } from "../common/NotificationContext";
 
@@ -63,7 +64,7 @@ export default function ProfileAvatarBox({
       formData.append("avatar", file);
       formData.append("userId", userId);
 
-      const res = await axios.post("/", formData, {
+      const res = await apiClient.post("/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -118,7 +119,13 @@ export default function ProfileAvatarBox({
     <Avatar>
       <AvatarImage $isUploading={isUploading}>
         {avatarPreview ? (
-          <img src={avatarPreview} alt="profile" />
+          <OptimizedImage
+            src={avatarPreview}
+            alt="profile"
+            width={150}
+            height={150}
+            blur={false}
+          />
         ) : (
           <DefaultAvatar>👤</DefaultAvatar>
         )}
@@ -157,10 +164,10 @@ const AvatarImage = styled.div`
   opacity: ${(props) => (props.$isUploading ? 0.6 : 1)};
   transition: opacity 0.3s;
 
-  img {
+  div {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    border-radius: 50%;
   }
 `;
 

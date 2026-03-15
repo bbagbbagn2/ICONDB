@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { apiClient } from "../../config/apiClient";
 import styled from "styled-components";
 
 import UploadCardBox from "./UploadCard";
@@ -97,7 +97,7 @@ export default function FormBox() {
 
     const result = await request(
       () =>
-        axios.post("/insert_content", uploadData, {
+        apiClient.post("/insert_content", uploadData, {
           headers: { "Content-Type": "multipart/form-data" },
         }),
       "UPLOAD",

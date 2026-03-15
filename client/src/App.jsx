@@ -20,8 +20,7 @@ import NotFound from "./pages/NotFound";
 function App() {
   // 앱 초기 로드 시 인증 상태 초기화
   useEffect(() => {
-    const initializeAuth = useAuthStore((state) => state.initializeAuth);
-    initializeAuth();
+    useAuthStore.getState().initializeAuth();
   }, []);
   return (
     <ErrorBoundary>

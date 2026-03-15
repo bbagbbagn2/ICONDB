@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import { apiClient } from "../config/apiClient";
 
 /**
  * Zustand 기반 프로필 상태 관리 스토어
@@ -39,12 +39,12 @@ export const useProfileStore = create((set, get) => ({
         followerRes,
         followCheckRes,
       ] = await Promise.all([
-        axios.post("/get_profile", { user: userId }),
-        axios.post("/get_usercontent", { id: userId }),
-        axios.post("/get_userlikedcontent", { id: userId }),
-        axios.post("/get_following", { id: userId }),
-        axios.post("/get_followers", { id: userId }),
-        axios.post("/check_followed", { userId }),
+        apiClient.post("/get_profile", { user: userId }),
+        apiClient.post("/get_usercontent", { id: userId }),
+        apiClient.post("/get_userlikedcontent", { id: userId }),
+        apiClient.post("/get_following", { id: userId }),
+        apiClient.post("/get_followers", { id: userId }),
+        apiClient.post("/check_followed", { userId }),
       ]);
 
       set({
@@ -53,10 +53,14 @@ export const useProfileStore = create((set, get) => ({
           nickname: "Anonymous",
           id: userId,
         },
-        profileContent: contentRes.data || [],
-        profileLiked: likedRes.data || [],
-        profileFollowing: followingRes.data || [],
-        profileFollowers: followerRes.data || [],
+        profileContent: Array.isArray(contentRes.data) ? contentRes.data : [],
+        profileLiked: Array.isArray(likedRes.data) ? likedRes.data : [],
+        profileFollowing: Array.isArray(followingRes.data)
+          ? followingRes.data
+          : [],
+        profileFollowers: Array.isArray(followerRes.data)
+          ? followerRes.data
+          : [],
         followed: followCheckRes.data?.followed || false,
         isLoading: false,
       });
@@ -82,7 +86,7 @@ export const useProfileStore = create((set, get) => ({
   // 액션: 팔로우
   followUser: async (userId) => {
     try {
-      await axios.post("/follow", { userId });
+      await apiClient.post("/follow", { userId });
       set({ followed: true });
       return true;
     } catch (error) {
@@ -95,7 +99,7 @@ export const useProfileStore = create((set, get) => ({
   // 액션: 언팔로우
   unfollowUser: async (userId) => {
     try {
-      await axios.post("/unfollow", { userId });
+      await apiClient.post("/unfollow", { userId });
       set({ followed: false });
       return true;
     } catch (error) {
@@ -115,7 +119,7 @@ export const useProfileStore = create((set, get) => ({
         formData.append("profileImage", profileImage);
       }
 
-      const response = await axios.post("/update_profile", formData, {
+      const response = await apiClient.post("/update_profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

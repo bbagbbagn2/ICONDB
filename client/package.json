@@ -26,6 +26,7 @@
     "zustand": "^4.4.1"
   },
   "scripts": {
+    "dev": "vite",
     "start": "vite",
     "build": "vite build",
     "test": "vitest",

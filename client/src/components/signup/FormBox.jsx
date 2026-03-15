@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { apiClient } from "../../config/apiClient";
 import styled from "styled-components";
 
 import { useNotification } from "../common/NotificationContext";
@@ -86,7 +86,7 @@ export default function SignupFormBox() {
     }
 
     const data = await request(
-      () => axios.post("/sign_up", { formData }),
+      () => apiClient.post("/sign_up", { formData }),
       "SIGNUP",
     );
 

@@ -4,26 +4,6 @@ import { useErrorHandler } from "./useErrorHandler";
 /**
  * API 요청을 간단하게 처리하는 훅
  * axios 호출 + 에러 핸들링 + 로딩 상태를 통합 관리합니다
- *
- * @example
- * // 기본 사용
- * const { request, loading } = useApi();
- *
- * const handleLogin = async () => {
- *   const data = await request(() => axios.post("/sign_in", formData), "LOGIN");
- *   if (data) navigate("/");
- * };
- *
- * // 더 상세한 제어
- * const { request, loading, error } = useApi();
- *
- * const handleUpload = async () => {
- *   const result = await request(
- *     () => axios.post("/upload", formData, { headers: {...} }),
- *     "UPLOAD",
- *     false // showWarning
- *   );
- * };
  */
 export const useApi = () => {
   const [error, setError] = useState(null);

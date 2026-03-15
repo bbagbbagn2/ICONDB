@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { apiClient } from "../config/apiClient";
 import { useNotification } from "../components/common/NotificationContext";
 import { useApi } from "./useApi";
 import { useAuthStore } from "../stores/authStore";
@@ -83,7 +83,7 @@ export const useLoginForm = () => {
 
     try {
       const data = await request(
-        () => axios.post("/sign_in", { formData }),
+        () => apiClient.post("/sign_in", { formData }),
         "LOGIN",
       );
 

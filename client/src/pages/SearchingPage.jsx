@@ -8,6 +8,7 @@ import Header from "../components/common/Header";
 import SearchBox from "../components/SearchBox";
 import TopButton from "../components/TopButton";
 import Footer from "../components/common/Footer";
+import OptimizedImage from "../components/OptimizedImage";
 import { useSearchStore } from "../stores/searchStore";
 
 /**
@@ -50,7 +51,7 @@ export default function SearchingPage() {
         </SearchSection>
 
         <ContentSection>
-          {loading ? (
+          {isLoading ? (
             <LoadingContainer>
               <CircularProgress size={60} />
             </LoadingContainer>
@@ -64,9 +65,12 @@ export default function SearchingPage() {
               {data.map((item, idx) => (
                 <IconLink key={idx} to={`/post/${item.content_id}`}>
                   <IconWrapper>
-                    <IconImage
+                    <OptimizedImage
                       src={`https://webservicegraduationproject.s3.amazonaws.com/img/${item.filename}`}
                       alt={item.filename}
+                      width={250}
+                      height={250}
+                      blur={true}
                     />
                     <Overlay>
                       <OverlayText>상세 보기</OverlayText>
@@ -205,10 +209,4 @@ const EmptyText = styled.p`
   color: #7f8c8d;
 `;
 
-const IconImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 1rem;
-  transition: transform 0.3s ease;
-`;
+// OptimizedImage가 대체함 - 스타일은 컴포넌트 내부에서 처리됨
