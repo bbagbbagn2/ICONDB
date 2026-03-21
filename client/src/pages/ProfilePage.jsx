@@ -453,8 +453,6 @@ const IconLink = styled(Link)`
   }
 `;
 
-// OptimizedImage가 대체함 - 스타일은 컴포넌트 내부에서 처리됨
-
 const UserGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
