@@ -1,8 +1,3 @@
-/**
- * API 클라이언트 설정
- * 환경에 따라 자동으로 API URL 변경
- */
-
 import axios from "axios";
 
 // 환경변수에서 API URL 가져오기
